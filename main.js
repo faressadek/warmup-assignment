@@ -112,9 +112,10 @@ function readRateFile(rateFile) {
 }
 // ============================================================
 // Function 1: getShiftDuration(startTime, endTime)
-// startTime: (typeof string) formatted as hh:mm:ss am or hh:mm:ss pm
-// endTime: (typeof string) formatted as hh:mm:ss am or hh:mm:ss pm
-// Returns: string formatted as h:mm:ss
+// Explanation:
+// This function calculates the total shift duration by converting the
+// 12-hour formatted start and end times into seconds, subtracting them,
+// and converting the result back into "h:mm:ss" format.
 // ============================================================
 function getShiftDuration(startTime, endTime) {
     let startSec = twelveHourToSeconds(startTime);
@@ -124,9 +125,10 @@ function getShiftDuration(startTime, endTime) {
 
 // ============================================================
 // Function 2: getIdleTime(startTime, endTime)
-// startTime: (typeof string) formatted as hh:mm:ss am or hh:mm:ss pm
-// endTime: (typeof string) formatted as hh:mm:ss am or hh:mm:ss pm
-// Returns: string formatted as h:mm:ss
+// Explanation:
+// This function calculates idle time outside official delivery hours
+// (8:00 AM to 10:00 PM). It counts any time before 8 AM and after 10 PM
+// as idle and returns the total idle duration in "h:mm:ss" format.
 // ============================================================
 function getIdleTime(startTime, endTime) {
     let startSec = twelveHourToSeconds(startTime);
@@ -153,9 +155,10 @@ function getIdleTime(startTime, endTime) {
 
 // ============================================================
 // Function 3: getActiveTime(shiftDuration, idleTime)
-// shiftDuration: (typeof string) formatted as h:mm:ss
-// idleTime: (typeof string) formatted as h:mm:ss
-// Returns: string formatted as h:mm:ss
+// Explanation:
+// Active time is computed by subtracting idle time from the total shift duration.
+// Both values are converted to seconds for accurate calculation,
+// then converted back to formatted duration.
 // ============================================================
 function getActiveTime(shiftDuration, idleTime) {
     let shiftSec = durationToSeconds(shiftDuration);
@@ -165,9 +168,10 @@ function getActiveTime(shiftDuration, idleTime) {
 
 // ============================================================
 // Function 4: metQuota(date, activeTime)
-// date: (typeof string) formatted as yyyy-mm-dd
-// activeTime: (typeof string) formatted as h:mm:ss
-// Returns: boolean
+// Explanation:
+// This function checks whether the driver's active hours meet the required daily quota.
+// The quota is normally 8 hours 24 minutes, but during the Eid period
+// (April 10–30, 2025) it is reduced to 6 hours.
 // ============================================================
 function metQuota(date, activeTime) {
     let activeSec = durationToSeconds(activeTime);
@@ -177,9 +181,12 @@ function metQuota(date, activeTime) {
 
 // ============================================================
 // Function 5: addShiftRecord(textFile, shiftObj)
-// textFile: (typeof string) path to shifts text file
-// shiftObj: (typeof object) has driverID, driverName, date, startTime, endTime
-// Returns: object with 10 properties or empty object {}
+// Explanation:
+// This function adds a new shift record to the shifts file.
+// It first checks for duplicates (same driverID and date).
+// If no duplicate exists, it calculates shiftDuration, idleTime,
+// activeTime, and metQuota, sets hasBonus to false by default,
+// and inserts the new record after the last entry of that driver.
 // ============================================================
 function addShiftRecord(textFile, shiftObj) {
     let records = readShiftFile(textFile);
@@ -227,11 +234,10 @@ function addShiftRecord(textFile, shiftObj) {
 
 // ============================================================
 // Function 6: setBonus(textFile, driverID, date, newValue)
-// textFile: (typeof string) path to shifts text file
-// driverID: (typeof string)
-// date: (typeof string) formatted as yyyy-mm-dd
-// newValue: (typeof boolean)
-// Returns: nothing (void)
+// Explanation:
+// This function updates the hasBonus value for a specific driver
+// on a specific date. The updated data is written back to the shifts file.
+// It does not return a value.
 // ============================================================
 function setBonus(textFile, driverID, date, newValue) {
     let records = readShiftFile(textFile);
@@ -248,10 +254,10 @@ function setBonus(textFile, driverID, date, newValue) {
 
 // ============================================================
 // Function 7: countBonusPerMonth(textFile, driverID, month)
-// textFile: (typeof string) path to shifts text file
-// driverID: (typeof string)
-// month: (typeof string) formatted as mm or m
-// Returns: number (-1 if driverID not found)
+// Explanation:
+// This function counts how many times a driver received a bonus
+// during a specific month. It handles both single-digit and two-digit
+// month inputs and returns -1 if the driver does not exist.
 // ============================================================
 function countBonusPerMonth(textFile, driverID, month) {
     let records = readShiftFile(textFile);
@@ -277,10 +283,10 @@ function countBonusPerMonth(textFile, driverID, month) {
 
 // ============================================================
 // Function 8: getTotalActiveHoursPerMonth(textFile, driverID, month)
-// textFile: (typeof string) path to shifts text file
-// driverID: (typeof string)
-// month: (typeof number)
-// Returns: string formatted as hhh:mm:ss
+// Explanation:
+// This function sums all activeTime values for a driver in a given month.
+// It includes all working days, even if they fall on the driver's day off,
+// and returns the total in "hhh:mm:ss" format.
 // ============================================================
 function getTotalActiveHoursPerMonth(textFile, driverID, month) {
     let records = readShiftFile(textFile);
@@ -298,12 +304,11 @@ function getTotalActiveHoursPerMonth(textFile, driverID, month) {
 
 // ============================================================
 // Function 9: getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, month)
-// textFile: (typeof string) path to shifts text file
-// rateFile: (typeof string) path to driver rates text file
-// bonusCount: (typeof number) total bonuses for given driver per month
-// driverID: (typeof string)
-// month: (typeof number)
-// Returns: string formatted as hhh:mm:ss
+// Explanation:
+// This function calculates the total required working hours for a driver
+// in a specific month. It excludes the driver's assigned day off,
+// applies the reduced quota during the Eid period,
+// and subtracts 2 hours for each bonus earned in that month.
 // ============================================================
 function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, month) {
     let records = readShiftFile(textFile);
@@ -335,11 +340,11 @@ function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, mont
 
 // ============================================================
 // Function 10: getNetPay(driverID, actualHours, requiredHours, rateFile)
-// driverID: (typeof string)
-// actualHours: (typeof string) formatted as hhh:mm:ss
-// requiredHours: (typeof string) formatted as hhh:mm:ss
-// rateFile: (typeof string) path to driver rates text file
-// Returns: integer (net pay)
+// Explanation:
+// This function calculates the driver's net monthly pay based on
+// actual hours versus required hours. It applies tier-based allowances
+// for missing hours and deducts salary only for full missing hours
+// beyond the allowed limit, using floor(basePay / 185) as the hourly deduction rate.
 // ============================================================
 function getNetPay(driverID, actualHours, requiredHours, rateFile) {
     let rates = readRateFile(rateFile);
